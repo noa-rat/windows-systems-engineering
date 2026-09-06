@@ -213,7 +213,6 @@ The in-process rate limiter and caches are instance-local. For a multi-instance 
 - Ollama is local by default and can become the primary latency bottleneck.
 - Embedding indexes are rebuilt when stored article signatures change.
 - A load test should be performed before production deployment with concurrent login, news, graph, and chat requests.
-- Logs must never include passwords, JWTs, or full user prompts containing sensitive information.
 
 ## Validation
 
