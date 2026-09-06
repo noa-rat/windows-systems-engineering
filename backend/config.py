@@ -1,53 +1,48 @@
-# backend/config.py
-# הגדרות עבור חיבורים חיצוניים
+import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
-import pyodbc
+
+
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+
 
 class Settings(BaseSettings):
-    # מפתח API ל-NewsAPI
-    NEWS_API_KEY: str = "5c567455b0f840eba81710a63a0fe79a"
-    # פרטי התחברות למסד הנתונים
+    NEWS_API_KEY: str = os.getenv("NEWS_API_KEY", "")
+    SOMEE_DB_PASSWORD: str = os.getenv("SOMEE_DB_PASSWORD", "")
     DATABASE_URL: str = (
         "DRIVER={ODBC Driver 18 for SQL Server};"
-        "Server=noaRattDB.mssql.somee.com;"
-        "Database=noaRattDB;"
-        "Uid=noa-ratt_SQLLogin_1;"
-        "Pwd=gp12a9juxe;"
+        "SERVER=noaRattDB.mssql.somee.com;"
+        "DATABASE=noaRattDB;"
+        "UID=noa-ratt_SQLLogin_1;"
+        f"PWD={os.getenv('SOMEE_DB_PASSWORD', '')};"
         "TrustServerCertificate=yes;"
         "Encrypt=yes;"
     )
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+    OLLAMA_GENERATION_MODEL: str = os.getenv("OLLAMA_GENERATION_MODEL", "tinyllama")
+    OLLAMA_EMBEDDING_MODEL: str = os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
+    OLLAMA_GENERATION_TIMEOUT: int = 120
+    OLLAMA_EMBEDDING_TIMEOUT: int = 120
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "")
+    JWT_EXPIRE_MINUTES: int = 60
+    DB_POOL_MIN_SIZE: int = 2
+    DB_POOL_MAX_SIZE: int = 10
+    SERVER_MAX_WORKERS: int = 8
+    NEWS_API_TIMEOUT: int = 20
+    NEWS_MAX_ARTICLES: int = 20
+    CHAT_MAX_PROMPT_LENGTH: int = 4000
+    CHAT_MAX_CONTEXT_LENGTH: int = 12000
+    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000")
+    FORCE_HTTPS: bool = os.getenv("FORCE_HTTPS", "false").lower() == "true"
 
-    # שם מודל ה-ollama
-    OLLAMA_MODEL: str = "tinyllama"
 
 settings = Settings()
 
-
-def test_connection():
-    print("מנסה להתחבר למסד הנתונים...")
-    try:
-        # פתיחת חיבור עם הגבלת זמן כדי שלא ייתקע לנצח
-        conn = pyodbc.connect(settings.DATABASE_URL, timeout=10)
-        print("✅ החיבור למסד הנתונים עובד בהצלחה!")
-
-        # בדיקה נוספת: שליפת גרסת השרת כדי לוודא שניתן להריץ שאילתות
-        cursor = conn.cursor()
-        cursor.execute("SELECT @@VERSION")
-        row = cursor.fetchone()
-        print(f"גרסת השרת: {row[0]}")
-
-        conn.close()
-    except pyodbc.Error as ex:
-        print("❌ שגיאה בחיבור למסד הנתונים:")
-        sqlstate = ex.args[0]
-        print(f"קוד מצב (SQL State): {sqlstate}")
-        # במקרה של שגיאת ODBC, האיבר השני מכיל את הודעת השגיאה המפורטת
-        if len(ex.args) > 1:
-            print(f"פרטי השגיאה: {ex.args[1]}")
-    except Exception as e:
-        print(f"❌ שגיאה כללית: {e}")
-
-
-if __name__ == "__main__":
-    test_connection()
+if not settings.JWT_SECRET:
+    raise RuntimeError("JWT_SECRET must be configured in .env.")
+if not settings.SOMEE_DB_PASSWORD:
+    raise RuntimeError("SOMEE_DB_PASSWORD must be configured in .env.")
+if not settings.NEWS_API_KEY:
+    raise RuntimeError("NEWS_API_KEY must be configured in .env.")

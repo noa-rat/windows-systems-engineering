@@ -1,7 +1,3 @@
-# client/shared/styles.py
-# הגדרות עיצוב
-
-# עיצוב רגיל (בהיר)
 APP_STYLE = """
     QWidget {
         background-color: #f2f6fc;
@@ -42,7 +38,6 @@ APP_STYLE = """
     }
 """
 
-# עיצוב כהה
 DARK_STYLE = """
     QWidget {
         background-color: #1e1e1e;

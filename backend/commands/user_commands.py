@@ -1,47 +1,40 @@
-# backend/commands/user_commands.py
-# מנהל עדכון נתוני משתמשים
-
 import json
+import pyodbc
 from backend.database import get_connection
+from backend.passwords import hash_password
+from backend.models.preferences_model import UserPreferences
+from backend.models.api_models import PreferencesUpdateResponse
 
-# רישום משתמש
 def create_new_user(username, password):
+    conn = get_connection()
+    cursor = conn.cursor()
     try:
-        # חיבור למסד הנתונים
-        conn = get_connection()
-        cursor = conn.cursor()
-
-        # בדיקה אם המשתמש כבר קיים
         cursor.execute("SELECT COUNT(*) FROM Users WHERE Username = ?", (username,))
         if cursor.fetchone()[0] > 0:
             return False
 
-        # הוספת משתמש חדש
         cursor.execute("""
             INSERT INTO Users (Username, Password)
             VALUES (?, ?)
-        """, (username, password))
+        """, (username, hash_password(password)))
         conn.commit()
-
-        cursor.close()
-        conn.close()
         return True
 
-    except Exception as e:
-        print("שגיאה ביצירת משתמש:", e)
+    except pyodbc.IntegrityError:
+        conn.rollback()
         return False
+    finally:
+        cursor.close()
+        conn.close()
 
-# עדכון העדפות משתמש
-def update_user_preferences(user_id: int, prefs: dict):
+def update_user_preferences(prefs: UserPreferences):
     conn = get_connection()
     cursor = conn.cursor()
 
-    # מחלץ את ההעדפות מתוך הפרמטרים
-    fav = json.dumps(prefs.get("favorite_categories", ["general"]))
-    dark = int(prefs.get("dark_mode", False))
+    fav = json.dumps(prefs.favorite_categories)
+    dark = int(prefs.dark_mode)
+    user_id = prefs.user_id
 
-    # אם קיימת שורה עבור המשתמש - מתבצע עדכון
-    # אחרת - מתבצעת הוספת שורה עבורו
     cursor.execute("""
         IF EXISTS (SELECT 1 FROM UserPreferences WHERE UserID = ?)
         BEGIN
@@ -55,4 +48,4 @@ def update_user_preferences(user_id: int, prefs: dict):
 
     conn.commit()
     conn.close()
-    return {"success": True}
+    return PreferencesUpdateResponse(success=True)

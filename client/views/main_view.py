@@ -1,5 +1,3 @@
-# main_window.py
-# מסך מאחד של כל המסכים
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget
 from client.shared.styles import DARK_STYLE, APP_STYLE
 from client.views.news_view import NewsView
@@ -15,19 +13,18 @@ class MainWindow(QWidget):
         self.resize(1100, 700)
         self.user = user
 
-        # stacked widget להצגת המסכים
         self.stack = QStackedWidget()
         self.news_view = NewsView(user=self.user)
         self.chat_view = ChatView(article=None)
         self.graph_view = GraphView()
-        self.settings_view = SettingsView(user=self.user)
+        self.settings_view = SettingsView(user=self.user, parent=self)
+        self.news_view.article_selection_changed.connect(self.update_chat_button)
 
         self.stack.addWidget(self.news_view)
         self.stack.addWidget(self.chat_view)
         self.stack.addWidget(self.graph_view)
         self.stack.addWidget(self.settings_view)
 
-        # תפריט למעבר בין מסכים
         self.menu_layout = QVBoxLayout()
         self.news_btn = QPushButton("📰 News")
         self.chat_btn = QPushButton("💬 Ask the AI")
@@ -50,23 +47,30 @@ class MainWindow(QWidget):
         self.menu_layout.addWidget(self.settings_btn)
         self.menu_layout.addStretch()
 
-        # פריסה אופקית בין המסכים והתפריט הצדדי
         layout = QHBoxLayout()
         layout.addWidget(self.stack, stretch=1)
         layout.addLayout(self.menu_layout)
         self.setLayout(layout)
 
-        # הצגת מסך החדשות כברירת מחדל
         self.stack.setCurrentWidget(self.news_view)
 
-        # עדכון ועיצוב
-        self.news_view.refresh_preferences()
-        self.style = self.news_view.styleSheet()
-        self.update_style()
+        self.news_view.load_news()
+        self.apply_theme(self.news_view.preferences.get("dark_mode", False))
 
-    # עדכון עיצוב
-    def update_style(self):
+    def update_chat_button(self, article):
+        if article:
+            self.chat_btn.setText("💬 Ask about article")
+        else:
+            self.chat_btn.setText("💬 Ask the AI")
+
+    def apply_theme(self, dark_mode):
+        self.style = DARK_STYLE if dark_mode else APP_STYLE
         self.setStyleSheet(self.style)
+        self.news_view.setStyleSheet(self.style)
+        self.chat_view.setStyleSheet(self.style)
+        self.graph_view.setStyleSheet(self.style)
+        self.settings_view.setStyleSheet(self.style)
+
         self.chat_btn.setStyleSheet("""
             QPushButton {
                 background-color: qlineargradient(
@@ -90,42 +94,27 @@ class MainWindow(QWidget):
             }
         """)
 
-    # עדכון עיצוב ופתיחת מסך החדשות
+        self.update()
+
+    def update_style(self):
+        self.apply_theme(self.style == DARK_STYLE)
+
     def show_news(self):
-        self.news_view.refresh_preferences()
-        self.style = self.news_view.styleSheet()
-        self.news_view.setStyleSheet(self.style)
-        self.update_style()
         self.stack.setCurrentWidget(self.news_view)
 
-    # עדכון עיצוב ופתיחת מסך הצ'אט
     def show_chat(self):
         selected_article = self.news_view.selected_article
         self.chat_view.article = selected_article
         self.chat_view.question_box.clear()
         self.chat_view.answer_box.clear()
-        self.news_view.refresh_preferences(False)
-        self.chat_view.setStyleSheet(self.style)
-        self.update_style()
         self.stack.setCurrentWidget(self.chat_view)
 
-    # עדכון עיצוב ופתיחת מסך הגרפים
     def show_graph(self):
-        self.news_view.refresh_preferences(False)
-        self.style = self.news_view.styleSheet()
-        self.graph_view.setStyleSheet(self.style)
-        self.update_style()
         self.stack.setCurrentWidget(self.graph_view)
 
-    # עדכון עיצוב ופתיחת מסך ההגדרות
     def show_settings(self):
-        self.news_view.refresh_preferences(False)
-        self.style = self.news_view.styleSheet()
-        self.settings_view.setStyleSheet(self.style)
-        self.update_style()
         self.stack.setCurrentWidget(self.settings_view)
 
-# הרצה לבדיקה
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow(user={"id":1})

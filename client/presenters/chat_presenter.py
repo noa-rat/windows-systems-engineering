@@ -1,15 +1,11 @@
-# client/presenters/chat_presenter.py
-# מנהל את התקשורת בין מסך הצ'אט לשרת
-
-from client.shared.api import ask_ai
+from client.shared.api import ask_ai_async
 
 class ChatPresenter:
-    # מאפשר תקשורת עם ממשק המשתמש
     def __init__(self, view):
         self.view = view
 
-    # מעביר את השאלה שהזין המשתמש ל-ollama
-    def ask_question(self, prompt, article=None):
+    def ask_question(self, prompt, article, on_success, on_error):
         if not prompt.strip():
-            return "שאלה לא יכולה להיות ריקה."
-        return ask_ai(prompt, article)
+            on_error(ValueError("The question cannot be empty."))
+            return
+        ask_ai_async(prompt, article, on_success, on_error)

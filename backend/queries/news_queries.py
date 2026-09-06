@@ -1,81 +1,63 @@
-# backend/queries/news_queries.py
-# מנהל את שליפת הכתבות מתוך מסד הנתונים
-
 from backend.database import get_connection
+from backend.models.news_model import NewsItem
 
-# מחזירה רשימת כתבות לפי קטגוריה
+
+def _news_items(rows):
+    return [
+        NewsItem(
+            title=row[0],
+            summary=row[1] or "",
+            fulltext=row[2] or "",
+            category=row[3] or "",
+            date=row[4].strftime("%Y-%m-%d"),
+        )
+        for row in rows
+    ]
+
+
 def get_news_by_category(category):
     conn = get_connection()
     cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT Title, Summary, FullText, Category, Date
+            FROM NewsSummaries
+            WHERE Category = ?
+            ORDER BY Date DESC
+        """, (category,))
+        return _news_items(cursor.fetchall())
+    finally:
+        cursor.close()
+        conn.close()
 
-    # מריצה את השאילתא
-    cursor.execute("""
-                   SELECT Title, Summary, FullText, Date
-                   FROM NewsSummaries
-                   WHERE Category = ?
-                   ORDER BY Date DESC
-                   """, (category,))
 
-    # קולטת את רשימת התוצאות
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    # ממירה לטיפוס מילון
-    return [
-        {
-            "title": row[0],
-            "summary": row[1],
-            "fulltext": row[2],
-            "date": row[3].strftime("%Y-%m-%d")
-        }
-        for row in rows
-    ]
-
-# מחזירה רשימת כתבות לפי מילות מפתח
 def search_news_by_keyword(keyword):
     conn = get_connection()
     cursor = conn.cursor()
+    try:
+        keyword_like = f"%{keyword}%"
+        cursor.execute("""
+            SELECT Title, Summary, FullText, Category, Date
+            FROM NewsSummaries
+            WHERE Title LIKE ? OR Summary LIKE ?
+            ORDER BY Date DESC
+        """, (keyword_like, keyword_like))
+        return _news_items(cursor.fetchall())
+    finally:
+        cursor.close()
+        conn.close()
 
-    # מחפשת כתבות עם אחת ממילות המפתח בכותרת או בתקציר
-    keyword_like = f"%{keyword}%"
-    cursor.execute("""
-                   SELECT Title, Summary, FullText, Date
-                   FROM NewsSummaries
-                   WHERE Title LIKE ? OR Summary LIKE ?
-                   ORDER BY Date DESC
-                   """, (keyword_like, keyword_like))
 
-    # קולטת את רשימת התוצאות
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    # ממירה לטיפוס מילון
-    return [
-        {
-            "title": row[0],
-            "summary": row[1],
-            "fulltext": row[2],
-            "date": row[3].strftime("%Y-%m-%d")
-        }
-        for row in rows
-    ]
-
-# מחזירה את מספר הכתבות בכל קטגוריה
 def get_news_statistics_by_category():
     conn = get_connection()
     cursor = conn.cursor()
-
-    # מריצה את השאילתא לספירה לפי קטגוריה
-    cursor.execute("""
-                   SELECT Category, COUNT(*)
-                   FROM NewsSummaries
-                   GROUP BY Category
-                   """)
-    # קולטת את התוצאות וממירה לטיפוס מילון
-    data = {row[0]: row[1] for row in cursor.fetchall()}
-
-    cursor.close()
-    conn.close()
-    return data
+    try:
+        cursor.execute("""
+            SELECT Category, COUNT(*)
+            FROM NewsSummaries
+            GROUP BY Category
+        """)
+        return {str(row[0]): int(row[1]) for row in cursor.fetchall()}
+    finally:
+        cursor.close()
+        conn.close()

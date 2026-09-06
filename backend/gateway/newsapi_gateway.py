@@ -1,30 +1,35 @@
-# backend/gateway/newsapi_gateway.py
-# מנהל תקשורת עם NewsAPI.org
-
 import requests
 from backend.config import settings
+from backend.models.api_models import NewsApiArticle
+from backend.services.circuit_breaker import CircuitBreaker
 
-# שולח בקשה ל-NewsAPI ומחזיר את הכתבות
+
+_newsapi_breaker = CircuitBreaker("NewsAPI")
+
+
 def fetch_from_newsapi(category="general", page_size=5):
-    print(f"🔎 מביא חדשות מ־NewsAPI בקטגוריה: {category}")
     url = "https://newsapi.org/v2/top-headlines"
     params = {
         "apiKey": settings.NEWS_API_KEY,
         "language": "en",
-        "pageSize": page_size,
+        "pageSize": min(page_size, settings.NEWS_MAX_ARTICLES),
         "category": category
     }
 
+    _newsapi_breaker.before_call()
     try:
-        # שולח בקשה לשירות
-        response = requests.get(url, params=params)
-        # טיפול בשגיאות
+        response = requests.get(
+            url,
+            params=params,
+            timeout=settings.NEWS_API_TIMEOUT,
+        )
         response.raise_for_status()
-        # מחלץ את רשימת הכתבות מתוך התשובה
-        articles = response.json().get("articles", [])
-        print(f"📥 התקבלו {len(articles)} כתבות.")
-        return articles
-
-    except requests.RequestException as e:
-        print("❌ שגיאה בקריאת NewsAPI:", e)
-        return []
+        result = [
+            NewsApiArticle.model_validate(article)
+            for article in response.json().get("articles", [])
+        ]
+        _newsapi_breaker.success()
+        return result
+    except (requests.RequestException, ValueError):
+        _newsapi_breaker.failure()
+        raise
