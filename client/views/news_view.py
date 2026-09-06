@@ -12,21 +12,23 @@ from client.presenters.news_presenter import NewsPresenter
 
 class NewsView(QWidget):
     article_selection_changed = Signal(object)
+    preferences_loaded = Signal(bool)
 
-    def __init__(self, user=None):
+    def __init__(self, user=None, auto_load_preferences=True):
         super().__init__()
         self.user = user or {}
         self.setWindowTitle("AI News")
         self.resize(800, 700)
         self.all_articles = []
         self.preferences = {}
+        self.parent_window = None
         self.presenter = NewsPresenter(self)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
         self.title_label = QLabel("📰 AI News")
-        self.title_label.setStyleSheet("font-size: 26px; font-weight: bold;")
+        self.title_label.setStyleSheet("font-size: 20pt; font-weight: bold;")
         self.title_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.title_label)
 
@@ -42,7 +44,7 @@ class NewsView(QWidget):
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("Search...")
         self.search_box.setFixedHeight(38)
-        self.search_box.setStyleSheet("font-size: 18px; padding: 8px;")
+        self.search_box.setStyleSheet("font-size: 13pt; padding: 8px;")
         self.search_button = QPushButton("🔍")
         self.search_button.clicked.connect(self.on_search_click)
         self.search_layout = QHBoxLayout()
@@ -56,13 +58,24 @@ class NewsView(QWidget):
         self.layout.addWidget(self.news_box)
         self.selected_article = None
 
-        self.refresh_preferences(False)
+        if auto_load_preferences:
+            self.refresh_preferences(False)
 
     def load_news(self):
         category = self.category_select.currentText()
         self.load_button.setEnabled(False)
         self.load_button.setText("Loading...")
         self.presenter.load_news(category, self._news_loaded, self._news_load_failed)
+
+    def load_stored_news(self):
+        category = self.category_select.currentText()
+        self.load_button.setEnabled(False)
+        self.load_button.setText("Loading...")
+        self.presenter.load_stored_news(
+            category,
+            self._news_loaded,
+            self._news_load_failed,
+        )
 
     def _news_loaded(self, articles):
         self.load_button.setEnabled(True)
@@ -133,15 +146,20 @@ class NewsView(QWidget):
 
     def _preferences_loaded(self, data, if_load_news):
         self.preferences = data or {}
-        self.setStyleSheet(DARK_STYLE if self.preferences.get("dark_mode") else APP_STYLE)
+        dark_mode = self.preferences.get("dark_mode", False)
+        self.setStyleSheet(DARK_STYLE if dark_mode else APP_STYLE)
+        if self.parent_window is not None and hasattr(self.parent_window, "apply_theme"):
+            self.parent_window.apply_theme(dark_mode)
         default_category = self.preferences.get("favorite_categories", ["general"])[0]
         if default_category in [self.category_select.itemText(i) for i in range(self.category_select.count())]:
             self.category_select.setCurrentText(default_category)
         if if_load_news:
             self.load_news()
+        self.preferences_loaded.emit(dark_mode)
 
     def _preferences_load_failed(self, error):
         print("Failed to load preferences:", error)
+        self.preferences_loaded.emit(False)
 
     def filter_news(self):
         keyword = self.search_box.text().lower()

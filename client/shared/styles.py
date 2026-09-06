@@ -3,8 +3,31 @@ APP_STYLE = """
         background-color: #f2f6fc;
         font-family: Assistant, Arial;
     }
+    QFrame#navigationPanel {
+        background-color: #e5edf8;
+        border: 1px solid #c6d5e8;
+        border-radius: 12px;
+    }
+    QPushButton#navButton {
+        background-color: transparent;
+        color: #31506f;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        font-size: 11pt;
+        font-weight: 600;
+        padding: 10px 14px;
+        text-align: left;
+    }
+    QPushButton#navButton:hover {
+        background-color: #d3e2f4;
+    }
+    QPushButton#navButton:checked {
+        background-color: #3399ff;
+        color: white;
+        border-color: #1f6fc1;
+    }
     QLabel {
-        font-size: 18px;
+        font-size: 13pt;
     }
     QPushButton {
         background-color: qlineargradient(
@@ -13,7 +36,7 @@ APP_STYLE = """
             stop:1 #3399ff
         );
         color: white;
-        font-size: 16px;
+        font-size: 12pt;
         font-weight: bold;
         padding: 8px 12px;
         border-radius: 5px;
@@ -28,13 +51,13 @@ APP_STYLE = """
     }
     QComboBox {
         padding: 4px;
-        font-size: 14px;
+        font-size: 10pt;
     }
     QTextEdit {
         background-color: #ffffff;
         border: 1px solid #ddd;
         padding: 10px;
-        font-size: 14px;
+        font-size: 10pt;
     }
 """
 
@@ -44,8 +67,31 @@ DARK_STYLE = """
         color: #dddddd;
         font-family: Assistant, Arial;
     }
+    QFrame#navigationPanel {
+        background-color: #252a31;
+        border: 1px solid #3d4650;
+        border-radius: 12px;
+    }
+    QPushButton#navButton {
+        background-color: transparent;
+        color: #cfd7df;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        font-size: 11pt;
+        font-weight: 600;
+        padding: 10px 14px;
+        text-align: left;
+    }
+    QPushButton#navButton:hover {
+        background-color: #343d47;
+    }
+    QPushButton#navButton:checked {
+        background-color: #3399ff;
+        color: white;
+        border-color: #1f6fc1;
+    }
     QLabel {
-        font-size: 18px;
+        font-size: 13pt;
         color: #dddddd;
     }
     QPushButton {
@@ -55,7 +101,7 @@ DARK_STYLE = """
             stop:1 #3399ff
         );
         color: white;
-        font-size: 16px;
+        font-size: 12pt;
         font-weight: bold;
         padding: 8px 12px;
         border-radius: 5px;
@@ -72,7 +118,7 @@ DARK_STYLE = """
         background-color: #2c2c2c;
         color: white;
         padding: 4px;
-        font-size: 14px;
+        font-size: 10pt;
         border: 1px solid #555;
     }
     QTextEdit {
@@ -80,6 +126,6 @@ DARK_STYLE = """
         color: white;
         border: 1px solid #555;
         padding: 10px;
-        font-size: 14px;
+        font-size: 10pt;
     }
 """

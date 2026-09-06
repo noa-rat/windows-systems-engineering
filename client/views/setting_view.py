@@ -16,24 +16,28 @@ class SettingsView(QWidget):
         self.parent_window = parent
 
         self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(36, 28, 36, 28)
+        self.layout.setSpacing(14)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.layout)
 
         title = QLabel("⚙ User Settings")
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("font-size: 24px; margin-bottom: 15px; font-weight: bold;")
+        title.setStyleSheet("font-size: 18pt; margin-bottom: 15px; font-weight: bold;")
         self.layout.addWidget(title)
 
         self.category_combo = QComboBox()
-        self.category_combo.setStyleSheet("font-size: 18px;")
+        self.category_combo.setFixedHeight(42)
         self.category_combo.addItems(["general", "technology", "sports", "health"])
         self.layout.addWidget(QLabel("Default News Category:"))
         self.layout.addWidget(self.category_combo)
 
         self.dark_mode_checkbox = QCheckBox("Enable Dark Mode")
-        self.dark_mode_checkbox.setStyleSheet("font-size: 18px;")
+        self.dark_mode_checkbox.setMinimumHeight(32)
         self.layout.addWidget(self.dark_mode_checkbox)
 
         self.save_button = QPushButton("💾 Save Changes")
+        self.save_button.setMinimumHeight(44)
         self.save_button.clicked.connect(self.save_preferences)
         self.layout.addWidget(self.save_button)
 

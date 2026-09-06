@@ -20,20 +20,20 @@ class LoginView(QWidget):
 
         self.title = QLabel("👋\nWelcome\nto AI News")
         self.title.setAlignment(Qt.AlignCenter)
-        self.title.setStyleSheet("font-size: 32px; font-weight: bold; margin-bottom: 18px;")
+        self.title.setStyleSheet("font-size: 24pt; font-weight: bold; margin-bottom: 18px;")
         self.layout.addWidget(self.title)
 
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Username")
         self.username_input.setFixedHeight(40)
-        self.username_input.setStyleSheet("font-size: 18px; padding: 8px;")
+        self.username_input.setStyleSheet("font-size: 13pt; padding: 8px;")
         self.layout.addWidget(self.username_input)
 
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Password")
         self.password_input.setEchoMode(QLineEdit.Password)
         self.password_input.setFixedHeight(40)
-        self.password_input.setStyleSheet("font-size: 18px; padding: 8px;")
+        self.password_input.setStyleSheet("font-size: 13pt; padding: 8px;")
         self.layout.addWidget(self.password_input)
 
         self.login_button = QPushButton("Login")
@@ -59,10 +59,17 @@ class LoginView(QWidget):
         self._set_auth_buttons_enabled(True)
         if result.get("success"):
             self.main_window = MainWindow(user=result["user"])
-            self.main_window.show()
-            self.close()
+            self.main_window.ready.connect(self._show_main_window)
+            if self.main_window.is_ready:
+                self._show_main_window()
         else:
             QMessageBox.warning(self, "Login Failed", result.get("detail", "Unknown error."))
+
+    def _show_main_window(self):
+        self.main_window.show()
+        self.main_window.raise_()
+        self.main_window.activateWindow()
+        self.close()
 
     def handle_register(self):
         username = self.username_input.text()

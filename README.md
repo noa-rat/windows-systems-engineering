@@ -305,7 +305,3 @@ Check repository whitespace:
 ```powershell
 git diff --check
 ```
-
-## License
-
-Add the project's applicable license before distributing the application.

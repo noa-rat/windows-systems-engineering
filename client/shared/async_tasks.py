@@ -1,4 +1,4 @@
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal
+from PySide6.QtCore import QCoreApplication, QObject, QRunnable, QThreadPool, Signal
 
 
 class _WorkerSignals(QObject):
@@ -14,9 +14,12 @@ class _Worker(QRunnable):
 
     def run(self):
         try:
-            self.signals.succeeded.emit(self.function())
+            result = self.function()
+            if not QCoreApplication.closingDown():
+                self.signals.succeeded.emit(result)
         except Exception as error:
-            self.signals.failed.emit(error)
+            if not QCoreApplication.closingDown():
+                self.signals.failed.emit(error)
 
 
 def run_async(function, on_success, on_error=None):
