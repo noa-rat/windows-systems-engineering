@@ -1,0 +1,11 @@
+PyJWT>=2.8,<3
+bcrypt>=4.0,<6
+numpy>=1.24,<3
+fastapi>=0.110,<1
+uvicorn[standard]>=0.29,<1
+requests>=2.31,<3
+pydantic>=2.6,<3
+pydantic-settings>=2.2,<3
+python-dotenv>=1.0,<2
+pyodbc>=5.1,<6
+PySide6>=6.6,<7
