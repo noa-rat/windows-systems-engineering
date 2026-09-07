@@ -1,6 +1,6 @@
 # AI News Application
 
-An asynchronous desktop news application with a FastAPI backend, a PySide6 client, semantic retrieval, and two specialized Ollama models.
+Desktop application built with PySide6 and a FastAPI backend, featuring JWT authentication, SQL Server persistence, NewsAPI integration, and Ollama-powered embeddings and text generation.
 
 ## Features
 
