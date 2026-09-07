@@ -70,8 +70,6 @@ The embedding model is used only for retrieval. The generation model is used onl
 - Circuit breakers prevent repeated calls to unavailable external services.
 - Production deployments can enforce HTTPS with `FORCE_HTTPS=true`.
 
-JWT provides authentication and integrity. It does not encrypt network traffic. HTTPS is required for transport encryption.
-
 ## Load Protection and Resilience
 
 The application uses multiple independent protections:
