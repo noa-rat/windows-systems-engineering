@@ -1,3 +1,5 @@
+from threading import Lock
+
 from PySide6.QtCore import QCoreApplication, QObject, QRunnable, QThreadPool, Signal
 
 
@@ -22,9 +24,34 @@ class _Worker(QRunnable):
                 self.signals.failed.emit(error)
 
 
+_active_workers = set()
+_workers_lock = Lock()
+
+
+def _release_worker(worker):
+    with _workers_lock:
+        _active_workers.discard(worker)
+
+
 def run_async(function, on_success, on_error=None):
     worker = _Worker(function)
-    worker.signals.succeeded.connect(on_success)
+    with _workers_lock:
+        _active_workers.add(worker)
+
+    def handle_success(result):
+        try:
+            on_success(result)
+        finally:
+            _release_worker(worker)
+
+    def handle_error(error):
+        try:
+            if on_error is not None:
+                on_error(error)
+        finally:
+            _release_worker(worker)
+
+    worker.signals.succeeded.connect(handle_success)
     if on_error is not None:
-        worker.signals.failed.connect(on_error)
+        worker.signals.failed.connect(handle_error)
     QThreadPool.globalInstance().start(worker)

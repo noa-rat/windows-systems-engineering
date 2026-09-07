@@ -1,4 +1,3 @@
-# cd "C:\Users\WIN 11\Desktop\Windows Systems Engineering"
 # .\.venv\Scripts\python.exe -m client.main
 
 from PySide6.QtGui import QFont

@@ -42,6 +42,8 @@ settings = Settings()
 
 if not settings.JWT_SECRET:
     raise RuntimeError("JWT_SECRET must be configured in .env.")
+if len(settings.JWT_SECRET) < 32:
+    raise RuntimeError("JWT_SECRET must contain at least 32 characters.")
 if not settings.SOMEE_DB_PASSWORD:
     raise RuntimeError("SOMEE_DB_PASSWORD must be configured in .env.")
 if not settings.NEWS_API_KEY:

@@ -33,6 +33,7 @@ class NewsView(QWidget):
         self.layout.addWidget(self.title_label)
 
         self.category_select = QComboBox()
+        self.category_select.setFixedHeight(42)
         self.category_select.addItems(["general", "sports", "technology", "health"])
         self.layout.addWidget(self.category_select)
 

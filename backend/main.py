@@ -1,3 +1,5 @@
+# uvicorn backend.main:app --reload
+
 import pyodbc
 import requests
 from collections import defaultdict, deque
